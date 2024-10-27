@@ -227,6 +227,21 @@ export default defineComponent({
         return;
       }
 
+      const basketItems = ShoppingCartItemState.loadCartFromLocalStorage();
+      const index = basketItems.findIndex((it) => it.productId == selectedProduct.id);
+      if (index > -1){
+        const existingItemInBasket = basketItems[index];
+        existingItemInBasket.quantity += 1;
+        ShoppingCartItemState.updateItem(index, existingItemInBasket);
+        toast.success('Updated quantity in basket', {position: "top-right"});
+
+        setTimeout(() => {
+          this.$router.push("/shopping-list");
+        }, 1000);
+
+        return;
+      }
+
       const newItemBasket: BasketItem = {
         jobId:  "",
         quantity: 1,

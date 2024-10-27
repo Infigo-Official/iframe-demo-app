@@ -3,15 +3,15 @@
     <h1 class="title is-2 has-text-centered">Shopping Cart</h1>
 
     <div
-      class="errors"
-      v-if="placeOrderIssues.length > 0"
-      id="notification-errors"
+        class="errors"
+        v-if="placeOrderIssues.length > 0"
+        id="notification-errors"
     >
       <div class="title">Place order errors:</div>
       <div
-        v-for="(issue, index) in placeOrderIssues"
-        :key="index"
-        class="notification is-danger"
+          v-for="(issue, index) in placeOrderIssues"
+          :key="index"
+          class="notification is-danger"
       >
         {{ issue }}
       </div>
@@ -22,49 +22,49 @@
       <div class="columns is-multiline">
         <div class="column is-6">
           <div
-        v-for="(item, index) in cartItems"
-        :key="index"
-        class="box has-background-light"
-      >
-        <div class="columns is-multiline">
-          <div class="column thumbnail-cont"><img
-              :src="getThumbUrl(item.thumbnailUrls[0])"
-              alt="Thumbnail"
-              class="thumbnail"
-          /></div>
-          <div class="column">
-          <div class="item-details">
-            <h2 class="title is-4">{{ item.productName }}</h2>
-            <p class="subtitle is-6">{{ item.productSKU }}</p>
-            <div class="field">
-              <label class="label">Quantity</label>
-              <div class="control">
-                <input
-                  type="number"
-                  @input="onQuantityChange(index, $event)"
-                  v-model.number="item.quantity"
-                  min="1"
-                  class="input"
-                />
-              </div>
-            </div>
-            <div class="field">
-              <div class="buttons">
-                <button @click="editItem(index)" class="button is-info is-small" v-if="canEditJob(index)">
-                  Edit
-                </button>
-                <button @click="getOutput(index)" class="button is-info is-small" v-if="canCreateOutput(index)">
-                  Create Output
-                </button>
-                <button @click="removeItem(index)" class="button is-danger is-small">
-                  Remove
-                </button>
+              v-for="(item, index) in cartItems"
+              :key="index"
+              class="box has-background-light"
+          >
+            <div class="columns is-multiline">
+              <div class="column thumbnail-cont"><img
+                  :src="getThumbUrl(item.thumbnailUrls[0])"
+                  alt="Thumbnail"
+                  class="thumbnail"
+              /></div>
+              <div class="column">
+                <div class="item-details">
+                  <h2 class="title is-4">{{ item.productName }}</h2>
+                  <p class="subtitle is-6">{{ item.productSKU }}</p>
+                  <div class="field">
+                    <label class="label">Quantity</label>
+                    <div class="control">
+                      <input
+                          type="number"
+                          @input="onQuantityChange(index, $event)"
+                          v-model.number="item.quantity"
+                          min="1"
+                          class="input"
+                      />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <div class="buttons">
+                      <button @click="editItem(index)" class="button is-info is-small" v-if="canEditJob(index)">
+                        Edit
+                      </button>
+                      <button @click="getOutput(index)" class="button is-info is-small" v-if="canCreateOutput(index)">
+                        Create Output
+                      </button>
+                      <button @click="removeItem(index)" class="button is-danger is-small">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        </div>
-      </div>
         </div>
 
         <div class="column details-side">
@@ -84,14 +84,14 @@
             <div class="field">
               <label class="label">Delivery Method</label>
               <div class="control">
-                <input type="text" v-model="deliveryMethod" class="input" />
+                <input type="text" v-model="deliveryMethod" class="input"/>
               </div>
             </div>
 
             <div class="field">
               <label class="label">External Order ID</label>
               <div class="control">
-                <input type="text" v-model="externalOrderId" class="input" readonly />
+                <input type="text" v-model="externalOrderId" class="input" readonly/>
               </div>
             </div>
             <div class="continue buttons">
@@ -128,21 +128,21 @@
 
     <div class="hidden" id="details" v-if="cartItems.length > 0">
       <div class="columns details">
-      <div class="column">
-        <h1 class="title is-2 has-text-centered">Billing address</h1>
-        <Address
-          :address="billingAddress"
-          @address-change="onBillingAddressChange"
-        ></Address>
-      </div>
-      <div class="column">
-        <h1 class="title is-2 has-text-centered">Shipping address</h1>
-        <Address
-          :address="shippingAddress"
-          @address-change="onShippingAddressChange"
-        ></Address>
-      </div>
+        <div class="column">
+          <h1 class="title is-2 has-text-centered">Billing address</h1>
+          <Address
+              :address="billingAddress"
+              @address-change="onBillingAddressChange"
+          ></Address>
         </div>
+        <div class="column">
+          <h1 class="title is-2 has-text-centered">Shipping address</h1>
+          <Address
+              :address="shippingAddress"
+              @address-change="onShippingAddressChange"
+          ></Address>
+        </div>
+      </div>
       <div class="columns bottom-buttons">
         <div class="column is-12">
           <div class="buttons is-centered mt-4">
@@ -235,8 +235,8 @@ export default defineComponent({
     },
     async poolInternal(
         callbackUrl: string,
-      interval: number,
-      retries: number,
+        interval: number,
+        retries: number,
     ): Promise<boolean> {
       try {
         await PoolService.pool(callbackUrl);
@@ -267,33 +267,33 @@ export default defineComponent({
       const callbackUrl = PoolService.generateCallbackUrl(uniqueId);
 
       JobService.createOutput(item.jobId || '', callbackUrl)
-        .then((it) => {
-          console.log("Output created triggered", it.data);
-          const pool = this.pool(callbackUrl).then((it) => {
-            JobService.getOutput(item.jobId || '').catch((err) => {
-              console.error("Error getting output", err);
-              toast(`Error getting output: ${err.message}`, {
-                type: "error",
+          .then((it) => {
+            console.log("Output created triggered", it.data);
+            const pool = this.pool(callbackUrl).then((it) => {
+              JobService.getOutput(item.jobId || '').catch((err) => {
+                console.error("Error getting output", err);
+                toast(`Error getting output: ${err.message}`, {
+                  type: "error",
+                });
               });
             });
-          });
-          // const output = JobService.getOutput(item.Job.Id)
+            // const output = JobService.getOutput(item.Job.Id)
 
-          toast.promise(pool, {
-            pending: "Creating output...",
-            success: "Output created successfully",
-            error: "Error creating output",
+            toast.promise(pool, {
+              pending: "Creating output...",
+              success: "Output created successfully",
+              error: "Error creating output",
+            });
+          })
+          .catch((err) => {
+            console.error("Error creating output", err);
+            toast(`Error creating output: ${err.message}`, {
+              type: "error",
+            });
+          })
+          .finally(() => {
+            this.loading = false;
           });
-        })
-        .catch((err) => {
-          console.error("Error creating output", err);
-          toast(`Error creating output: ${err.message}`, {
-            type: "error",
-          });
-        })
-        .finally(() => {
-          this.loading = false;
-        });
     },
     removeItem(index: number) {
       ShoppingCartItemService.removeItem(index);
@@ -316,7 +316,7 @@ export default defineComponent({
           //scroll to notification-errors
           const element = document.getElementById("notification-errors");
           if (element) {
-            element.scrollIntoView({ behavior: "smooth" });
+            element.scrollIntoView({behavior: "smooth"});
           }
         })
       };
@@ -325,7 +325,7 @@ export default defineComponent({
         ...new Set(this.cartItems.map((it) => it.customerGuid)),
       ];
       const migrateCustomerIds = customerIds.filter(
-        (it) => it !== this.customerId,
+          (it) => it !== this.customerId,
       );
 
       let failed = false;
@@ -335,16 +335,16 @@ export default defineComponent({
         }
 
         CustomerService.migrateItems(customerGuid, this.customerId || "")
-          .then((it) => {
-            toast.info('Items migrated successfully');
-          })
-          .catch((err) => {
-            failed = true;
-            console.error("Error migrating items", err);
-            toast(`Error migrating items: ${err.message}`, {
-              type: "error",
+            .then((it) => {
+              toast.info('Items migrated successfully');
+            })
+            .catch((err) => {
+              failed = true;
+              console.error("Error migrating items", err);
+              toast(`Error migrating items: ${err.message}`, {
+                type: "error",
+              });
             });
-          });
       });
 
       if (failed) {
@@ -355,52 +355,52 @@ export default defineComponent({
       const orderRequest = new OrderRequest(this.billingAddress, this.shippingAddress, this.externalOrderId, this.customerId, this.deliveryMethod, this.poNumber, this.cartItems);
 
       OrderService.placeOrder(orderRequest)
-        .then((it) => {
-          console.log("Order placed with success", it.data.Success);
-          if (!it.data.Success) {
-            addErrors(
-              it.data.ContextInfo?.ErrorList?.map(
-                (q) => q.ErrorMessage || "",
-              ) ?? [],
+          .then((it) => {
+            console.log("Order placed with success", it.data.Success);
+            if (!it.data.Success) {
+              addErrors(
+                  it.data.ContextInfo?.ErrorList?.map(
+                      (q) => q.ErrorMessage || "",
+                  ) ?? [],
+              );
+              return;
+            }
+
+            const infigoOrderId = (it as any).data["CatfishOrderId"];
+
+            toast(
+                `Order placed successfully - infigo order id ${infigoOrderId}`,
+                {
+                  type: "success",
+                },
             );
-            return;
-          }
 
-          const infigoOrderId = (it as any).data["CatfishOrderId"];
+            this.clearCart(); // Clear the cart after placing the order
+            this.$router.push("/order/" + infigoOrderId); // Redirect to order confirmation page after placing the order
+          })
+          .catch((err) => {
+            const errors = err as AxiosError<InfigoApiResponseObjectModel>;
 
-          toast(
-            `Order placed successfully - infigo order id ${infigoOrderId}`,
-            {
-              type: "success",
-            },
-          );
+            const response =
+                (errors?.response?.data as InfigoApiResponseObjectModel) || {};
 
-          this.clearCart(); // Clear the cart after placing the order
-          this.$router.push("/order/" + infigoOrderId); // Redirect to order confirmation page after placing the order
-        })
-        .catch((err) => {
-          const errors = err as AxiosError<InfigoApiResponseObjectModel>;
+            if (!response.Success) {
+              addErrors(
+                  response.ContextInfo?.ErrorList?.map(
+                      (q) => q.ErrorMessage || "",
+                  ) ?? [],
+              );
+            }
 
-          const response =
-            (errors?.response?.data as InfigoApiResponseObjectModel) || {};
-
-          if (!response.Success) {
-            addErrors(
-              response.ContextInfo?.ErrorList?.map(
-                (q) => q.ErrorMessage || "",
-              ) ?? [],
-            );
-          }
-
-          console.error("Error", errors);
-          toast.error(`Error placing order: ${errors.message}`);
-        })
-        .finally(() => {
-          this.loading = false;
-        });
+            console.error("Error", errors);
+            toast.error(`Error placing order: ${errors.message}`);
+          })
+          .finally(() => {
+            this.loading = false;
+          });
     },
     getThumbUrl(thumbUrl: string) {
-      if (isRelativeUrl(thumbUrl)){
+      if (isRelativeUrl(thumbUrl)) {
         const baseUrl = SessionState.platformUrl;
         const origin = new URL(baseUrl || "").origin;
 
