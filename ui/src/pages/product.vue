@@ -27,8 +27,11 @@
               <div class="level-item">
                 <div class="field is-flex is-justify-content-right">
                   <div class="control buttons">
-                    <button type="submit" class="button is-dark-infigo" :disabled="!iframeProductId" v-if="!canGoToBasket">
+                    <button type="submit" class="button is-dark-infigo" :disabled="!iframeProductId" v-if="!canGoToBasket && canDesign()">
                       Open Editor
+                    </button>
+                    <button type="button" class="button is-dark-infigo" @click="addToBasket" v-if="!canGoToBasket && !canDesign()">
+                      Add to basket
                     </button>
                     <button type="button" class="button is-dark-infigo" @click="$router.push('/shopping-list')">
                       Go to basket
@@ -118,6 +121,7 @@ import Title from "@/components/layout/title.vue";
 import {InfigoProductType} from "@/types/infigo-product.type";
 import {BasketItem} from "@/types/demo/basket-item";
 import {ShoppingCartItem} from "@/types/iframe/infigo-job-response.type";
+import SessionState from "@/services/cache/session-state";
 
 export default defineComponent({
   components: {
@@ -168,12 +172,16 @@ export default defineComponent({
       try {
         const productsResponse = await ProductService.getAll();
 
+        const supportedProductTypes = [InfigoProductType.Dynamic, InfigoProductType.Static, InfigoProductType.Normal];
+
         this.products = productsResponse.data
-            .filter(it => it.Type == (+InfigoProductType.Dynamic))
+            .filter(it => supportedProductTypes.includes(it.Type as number))
             .map(it => {
               return {
                 id: it.Id as number,
                 name: it.Name as string,
+                type: (it.Type as number) as InfigoProductType,
+                thumbnailUrls: it.ThumbnailUrls,
                 attributes: it?.ProductAttributes
                     ?.filter(q => !q.Name?.startsWith("Catfish_"))
                     ?.map((q: any) => {
@@ -201,6 +209,41 @@ export default defineComponent({
       } finally {
         this.loading = false; // Hide loading overlay once data is fetched
       }
+    },
+    canDesign() {
+      const selectedProduct = this.products.find(q => q.id == this.iframeProductId);
+
+      if (!selectedProduct) {
+        return;
+      }
+
+      const allowedToDesign = [InfigoProductType.Dynamic];
+      return allowedToDesign.includes(selectedProduct.type);
+    },
+    addToBasket(){
+      const selectedProduct = this.products.find(q => q.id == this.iframeProductId);
+      if (!selectedProduct) {
+        toast("Product not found", {position: "top-right", type: "error"});
+        return;
+      }
+
+      const newItemBasket: BasketItem = {
+        jobId:  "",
+        quantity: 1,
+        productId: selectedProduct.id,
+        productName: selectedProduct.name,
+        productSKU: selectedProduct.name,
+        productType: selectedProduct.type,
+        thumbnailUrls: selectedProduct.thumbnailUrls,
+        customerGuid: SessionState.customerId ?? "",
+      }
+
+      ShoppingCartItemState.addItem(newItemBasket);
+
+      toast.success("Item added to basket", {position: "top-right"});
+      setTimeout(() => {
+        this.$router.push("/shopping-list");
+      }, 1000);
     },
     openIframeSubmit() {
       if (this.openIframe) {
@@ -256,7 +299,9 @@ interface AttributeType{
 interface ProductType {
   id: number;
   name: string;
-  attributes: AttributeType[]
+  attributes: AttributeType[],
+  type: InfigoProductType,
+  thumbnailUrls: string[]
 }
 
 </script>

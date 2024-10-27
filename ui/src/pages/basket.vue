@@ -188,6 +188,7 @@ import {OrderRequest} from "@/types/order-request";
 import PoolService from "@/services/pool-service";
 import {addToQueryString} from "@/utils/url";
 import {InfigoProductType} from "@/types/infigo-product.type";
+import isRelativeUrl from "@/utils/isRelativeUrl";
 
 export default defineComponent({
   components: {
@@ -398,14 +399,16 @@ export default defineComponent({
           this.loading = false;
         });
     },
-    getThumbUrl(thumb: string) {
-      const baseUrl = SessionState.platformUrl;
-      const origin = new URL(baseUrl || "").origin;
+    getThumbUrl(thumbUrl: string) {
+      if (isRelativeUrl(thumbUrl)){
+        const baseUrl = SessionState.platformUrl;
+        const origin = new URL(baseUrl || "").origin;
 
-      let url =`${origin}/${thumb}`;
+        thumbUrl = `${origin}/${thumbUrl}`;
+      }
 
       // add a timestamp to force browser to retrieve always the latest artwork from Infigo
-      return addToQueryString(url, 'timestamp', Date.now().toString());
+      return addToQueryString(thumbUrl, 'timestamp', Date.now().toString());
     },
     onQuantityChange(index: number, event: InputEvent) {
       const value = (event.target as any).value;
