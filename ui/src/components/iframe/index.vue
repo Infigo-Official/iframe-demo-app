@@ -52,7 +52,6 @@ const Communicator = {
           });
           break;
         case CatfishEditorCommunication.MessageConstants.EditorLoaded:
-          console.log('pushed', attributes);
           CatfishEditorCommunication.PostMessage('ExternalDataUpdate', JSON.stringify(attributes), domain, iframeEl?.contentWindow || null);
           break;
         default:

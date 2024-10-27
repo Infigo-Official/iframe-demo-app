@@ -393,7 +393,10 @@ export default defineComponent({
       const baseUrl = SessionState.platformUrl;
       const origin = new URL(baseUrl || "").origin;
 
-      return `${origin}/${thumb}`;
+      let url =`${origin}/${thumb}`;
+
+      // add a timestamp to force browser to retrieve always the latest artwork from Infigo
+      return addToQueryString(url, 'timestamp', Date.now().toString());
     },
     onQuantityChange(index: number, event: InputEvent) {
       const value = (event.target as any).value;
