@@ -18,6 +18,9 @@
               <li>
                 <a href="https://api.public.infigosoftware.rocks/" target="_blank">API Developers</a>
               </li>
+              <li>
+                <a href="https://wiki-iframe.private.infigosoftware.rocks/" target="_blank">Iframe documentation</a>
+              </li>
             </ul>
           </div>
           <div class="column is-3-desktop">
