@@ -8,7 +8,7 @@
     <div id="navbarMenu" class="navbar-menu">
       <div class="navbar-start">
         <router-link to="/setup" class="navbar-item">Setup</router-link>
-        <router-link to="/product" class="navbar-item">Design a product</router-link>
+        <router-link to="/product" class="navbar-item">Design a job</router-link>
         <router-link to="/shopping-list" class="navbar-item">Shopping Cart</router-link>
         <router-link to="/documentation" class="navbar-item">Iframe documentation</router-link>
       </div>
