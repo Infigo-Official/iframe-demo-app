@@ -6,6 +6,10 @@ router.beforeEach((to, from, next) => {
     const isValid = SessionService.isSetupValid();
 
     // Check if the route requires setup and if the API token is not set
+    if (to.path == '/documentation'){
+        location.href = 'https://wiki-iframe.private.infigosoftware.rocks/api-reference.html';
+        return;
+    }
     if (to.path !== "/setup" && !isValid) {
         next("/setup"); // Redirect to setup page if API token is missing
     } else {

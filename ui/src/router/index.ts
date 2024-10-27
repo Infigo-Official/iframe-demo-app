@@ -31,6 +31,11 @@ const routes: Array<RouteRecordRaw> = [
         name: "edit-job",
         component: () => import("../pages/edit-job.vue"),
     },
+    {
+        path: '/documentation',
+        name: 'documentation',
+        component: () => import("../pages/setup.vue"),
+    }
 ];
 
 const router = createRouter({
