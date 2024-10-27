@@ -1,5 +1,5 @@
 // Create the actual object in TypeScript
-import {MessageConstants, CatfishEditorCommunication} from "@/types/iframe/xdm/types";
+import {CatfishEditorCommunication} from "@/types/iframe/xdm/types";
 
 const CatfishEditorCommunication: CatfishEditorCommunication = (() => {
     return {
