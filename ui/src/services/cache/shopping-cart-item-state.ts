@@ -1,4 +1,4 @@
-import { ShoppingCartItem } from "@/types/iframe/infigo-job-response.type";
+import {BasketItem} from "@/types/demo/basket-item";
 
 /**
  * ShoppingCartService manages the shopping cart items for the Infigo application.
@@ -8,7 +8,7 @@ import { ShoppingCartItem } from "@/types/iframe/infigo-job-response.type";
  * to maintain a reference between shopping cart items and the associated Infigo job ID.
  */
 class ShoppingCartService {
-    private cartItems: Array<ShoppingCartItem> = [];
+    private cartItems: Array<BasketItem> = [];
 
     // Singleton pattern
     private static instance: ShoppingCartService;
@@ -28,7 +28,7 @@ class ShoppingCartService {
     /**
      * Retrieves the current items in the shopping cart.
      *
-     * @returns {Array<ShoppingCartItem>} - The array of shopping cart items.
+     * @returns {Array<BasketItem>} - The array of shopping cart items.
      */
     public getCartItems() {
         return this.cartItems;
@@ -37,9 +37,9 @@ class ShoppingCartService {
     /**
      * Adds an item to the shopping cart.
      *
-     * @param {ShoppingCartItem} item - The item to be added to the cart.
+     * @param {BasketItem} item - The item to be added to the cart.
      */
-    public addItem(item: ShoppingCartItem) {
+    public addItem(item: BasketItem) {
         this.cartItems.push(item);
         this.updateLocalStorage();
     }
@@ -66,9 +66,9 @@ class ShoppingCartService {
      * Updates an existing item in the shopping cart by its index.
      *
      * @param {number} index - The index of the item to be updated.
-     * @param {ShoppingCartItem} item - The new item to replace the existing one.
+     * @param {BasketItem} item - The new item to replace the existing one.
      */
-    public updateItem(index: number, item: ShoppingCartItem) {
+    public updateItem(index: number, item: BasketItem) {
         this.cartItems[index] = item;
         this.updateLocalStorage();
     }
@@ -84,7 +84,7 @@ class ShoppingCartService {
      * Loads the shopping cart items from local storage.
      * This method is called to initialize the cart items when the service is created.
      */
-    public loadCartFromLocalStorage() {
+    public loadCartFromLocalStorage(): BasketItem[] {
         const storedCart = JSON.parse(localStorage.getItem('cart') || '[]');
         this.cartItems = storedCart;
         return this.cartItems;

@@ -95,7 +95,7 @@
           <InfigoIframe :product-id="iframeProductId"
                         @iframe-loaded="iframeLoaded"
                         :attributes="attributeSelection"
-                        @item-added-to-basket="addToBasket"/>
+                        @item-added-to-basket="addDesignJob"/>
         </div>
       </div>
     </div>
@@ -109,13 +109,15 @@ import {defineComponent} from "vue";
 import ProductService from "@/services/api/product.service";
 import {toast} from "vue3-toastify";
 import InfigoIframe from "@/components/iframe/index.vue";
-import {ShoppingCartItem} from "@/types/iframe/infigo-job-response.type";
 import ShoppingCartItemState from "@/services/cache/shopping-cart-item-state";
 import InfigoLoading from "@/components/shared/loading.vue";
 import type {
   InfigoProductAttributeValueInfo
 } from "@infigo-official/types-for-api/src/models/InfigoProductAttributeValueInfo";
 import Title from "@/components/layout/title.vue";
+import {InfigoProductType} from "@/types/infigo-product.type";
+import {BasketItem} from "@/types/demo/basket-item";
+import {ShoppingCartItem} from "@/types/iframe/infigo-job-response.type";
 
 export default defineComponent({
   components: {
@@ -167,7 +169,7 @@ export default defineComponent({
         const productsResponse = await ProductService.getAll();
 
         this.products = productsResponse.data
-            .filter(it => it.Type == 50)
+            .filter(it => it.Type == (+InfigoProductType.Dynamic))
             .map(it => {
               return {
                 id: it.Id as number,
@@ -211,10 +213,20 @@ export default defineComponent({
     iframeLoaded() {
       this.loading = false;
     },
-    addToBasket(item: ShoppingCartItem) {
+    addDesignJob(item: ShoppingCartItem) {
       console.log("Item added to basket:", item);
+      const newItemBasket: BasketItem = {
+        jobId: item.Job.Id,
+        quantity: item.Job.Quantity,
+        productId: item.Product.Id,
+        productName: item.Product.Name,
+        productSKU: item.Product.Sku,
+        productType: InfigoProductType.Dynamic,
+        thumbnailUrls: item.Images.Thumbnails,
+        customerGuid: item.Customer.Guid,
+      }
 
-      ShoppingCartItemState.addItem(item);
+      ShoppingCartItemState.addItem(newItemBasket);
       this.canGoToBasket = true;
     }
   }

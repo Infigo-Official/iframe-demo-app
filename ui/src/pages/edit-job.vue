@@ -38,6 +38,7 @@ import { ShoppingCartItem } from "@/types/iframe/infigo-job-response.type";
 import ShoppingCartItemState from "@/services/cache/shopping-cart-item-state";
 import InfigoLoading from "@/components/shared/loading.vue";
 import Title from "@/components/layout/title.vue";
+import {BasketItem} from "@/types/demo/basket-item";
 
 export default defineComponent({
   components: {
@@ -67,7 +68,7 @@ export default defineComponent({
     ShoppingCartItemState.loadCartFromLocalStorage();
     const items = ShoppingCartItemState.getCartItems();
 
-    const item = items.find((it) => it.Job.Id == jobId);
+    const item = items.find((it) => it.jobId == jobId);
 
     if (!item) {
       toast("Job not found in basket", {
@@ -79,7 +80,7 @@ export default defineComponent({
     }
 
     this.jobId = jobId.toString() || null;
-    this.iframeProductId = item.Product.Id;
+    this.iframeProductId = item.productId;
     this.openIframe = true;
   },
   methods: {
@@ -89,13 +90,13 @@ export default defineComponent({
     iframeLoaded() {
       this.loading = false;
     },
-    addToBasket(item: ShoppingCartItem) {
+    addToBasket(item: BasketItem) {
       const existingItems = ShoppingCartItemState.loadCartFromLocalStorage();
 
-      const index = existingItems.findIndex((it) => it.Job.Id == item.Job.Id);
+      const index = existingItems.findIndex((it) => it.jobId == item.jobId);
 
       if (index < 0) {
-        alert(`Failed to save item to basket - ${item.Job.Id}`);
+        alert(`Failed to save item to basket - ${item.jobId}`);
         return;
       }
 

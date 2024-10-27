@@ -9,10 +9,10 @@
  */
 
 export interface Job {
-    Id: string;
+    Id?: string | null;
     Quantity: number;
     CustomName: string | null;
-    Attributes: any[]; // If you know the structure of the attributes, you can define it here.
+    Attributes: any[];
     Canvas: string;
     CanvasSize: string;
     NumPages: number;

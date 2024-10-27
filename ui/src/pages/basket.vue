@@ -28,21 +28,21 @@
       >
         <div class="columns is-multiline">
           <div class="column thumbnail-cont"><img
-              :src="getThumbUrl(item.Images.Thumbnails[0])"
+              :src="getThumbUrl(item.thumbnailUrls[0])"
               alt="Thumbnail"
               class="thumbnail"
           /></div>
           <div class="column">
           <div class="item-details">
-            <h2 class="title is-4">{{ item.Product.Name }}</h2>
-            <p class="subtitle is-6">{{ item.Product.Sku }}</p>
+            <h2 class="title is-4">{{ item.productName }}</h2>
+            <p class="subtitle is-6">{{ item.productSKU }}</p>
             <div class="field">
               <label class="label">Quantity</label>
               <div class="control">
                 <input
                   type="number"
                   @input="onQuantityChange(index, $event)"
-                  v-model.number="item.Job.Quantity"
+                  v-model.number="item.quantity"
                   min="1"
                   class="input"
                 />
@@ -50,10 +50,10 @@
             </div>
             <div class="field">
               <div class="buttons">
-                <button @click="editItem(index)" class="button is-info is-small">
+                <button @click="editItem(index)" class="button is-info is-small" v-if="canEditJob(index)">
                   Edit
                 </button>
-                <button @click="getOutput(index)" class="button is-info is-small">
+                <button @click="getOutput(index)" class="button is-info is-small" v-if="canCreateOutput(index)">
                   Create Output
                 </button>
                 <button @click="removeItem(index)" class="button is-danger is-small">
@@ -173,21 +173,21 @@
 <script lang="ts">
 import {defineComponent, nextTick} from "vue";
 import ShoppingCartItemService from "@/services/cache/shopping-cart-item-state";
-import { ShoppingCartItem } from "@/types/iframe/infigo-job-response.type";
+import ShoppingCartItemState from "@/services/cache/shopping-cart-item-state";
 import SessionState from "@/services/cache/session-state";
 import Address from "@/components/order/address.vue";
 import AddressState from "@/services/cache/address-state";
 import OrderService from "@/services/api/order.service";
-import { toast } from "vue3-toastify";
+import {toast} from "vue3-toastify";
 import InfigoLoading from "@/components/shared/loading.vue";
-import { AxiosError } from "axios";
-import { InfigoApiResponseObjectModel } from "@infigo-official/types-for-api/src/index";
+import {AxiosError} from "axios";
+import {InfigoApiResponseObjectModel} from "@infigo-official/types-for-api/src/index";
 import CustomerService from "@/services/api/customer.service";
 import JobService from "@/services/api/job.service";
 import {OrderRequest} from "@/types/order-request";
 import PoolService from "@/services/pool-service";
-import ShoppingCartItemState from "@/services/cache/shopping-cart-item-state";
 import {addToQueryString} from "@/utils/url";
+import {InfigoProductType} from "@/types/infigo-product.type";
 
 export default defineComponent({
   components: {
@@ -220,9 +220,17 @@ export default defineComponent({
         console.error("Cart element not found.");
       }
     },
+    canEditJob(index: number): boolean {
+      const item = this.cartItems[index];
+      return item.productType == InfigoProductType.Dynamic;
+    },
+    canCreateOutput(index: number): boolean {
+      const item = this.cartItems[index];
+      return item.productType == InfigoProductType.Dynamic;
+    },
     editItem(index: number) {
       const item = this.cartItems[index];
-      this.$router.push(`/edit/${item.Job.Id}`);
+      this.$router.push(`/edit/${item.jobId}`);
     },
     async poolInternal(
         callbackUrl: string,
@@ -257,11 +265,11 @@ export default defineComponent({
 
       const callbackUrl = PoolService.generateCallbackUrl(uniqueId);
 
-      JobService.createOutput(item.Job.Id, callbackUrl)
+      JobService.createOutput(item.jobId || '', callbackUrl)
         .then((it) => {
           console.log("Output created triggered", it.data);
           const pool = this.pool(callbackUrl).then((it) => {
-            JobService.getOutput(item.Job.Id).catch((err) => {
+            JobService.getOutput(item.jobId || '').catch((err) => {
               console.error("Error getting output", err);
               toast(`Error getting output: ${err.message}`, {
                 type: "error",
@@ -313,7 +321,7 @@ export default defineComponent({
       };
 
       const customerIds = [
-        ...new Set(this.cartItems.map((it) => it.Customer.Guid)),
+        ...new Set(this.cartItems.map((it) => it.customerGuid)),
       ];
       const migrateCustomerIds = customerIds.filter(
         (it) => it !== this.customerId,
@@ -407,7 +415,7 @@ export default defineComponent({
       }
 
       const item = this.cartItems[index];
-      item.Job.Quantity = quantity;
+      item.quantity = quantity;
       ShoppingCartItemService.updateItem(index, item);
     },
     onBillingAddressChange(address: any) {

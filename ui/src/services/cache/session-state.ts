@@ -43,7 +43,7 @@ class StateService {
         const items = ShoppingCartItemState.getCartItems();
 
         if (items.length > 0) {
-            return items[0].Customer.Guid;
+            return items[0].customerGuid;
         }
 
         const sessionId = localStorage.getItem('customerId') || uuidv4();
