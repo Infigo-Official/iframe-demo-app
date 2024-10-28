@@ -41,7 +41,12 @@ const Communicator = {
     var iframeEl = document.getElementById("infigo-product-editor") as any;
 
     var callBack = CatfishEditorCommunication.RegisterForCatfishEditorEvent(function (method, dData) {
-      eventCallback(method, dData);
+      
+      const legacyMethods = ['ItemAddedToBasketExt', 'ItemAddedToBasket'];
+      if (!legacyMethods.includes(method)) {
+        eventCallback(method, dData);
+      }
+
       switch (method) {
         case CatfishEditorCommunication.MessageConstants.InfigoItemAddedToBasket:
         case CatfishEditorCommunication.MessageConstants.InfigoItemAddedToSavedProjects:
