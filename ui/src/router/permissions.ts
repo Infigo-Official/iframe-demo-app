@@ -7,7 +7,7 @@ router.beforeEach((to, from, next) => {
 
     // Check if the route requires setup and if the API token is not set
     if (to.path == '/documentation'){
-        location.href = 'https://wiki-iframe.private.infigosoftware.rocks/api-reference.html';
+        location.href = 'https://wiki-iframe.private.infigosoftware.rocks/';
         return;
     }
     if (to.path !== "/setup" && !isValid) {
