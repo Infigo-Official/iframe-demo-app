@@ -233,7 +233,7 @@ export default defineComponent({
         const existingItemInBasket = basketItems[index];
         existingItemInBasket.quantity += 1;
         ShoppingCartItemState.updateItem(index, existingItemInBasket);
-        toast.success('Updated quantity in basket', {position: "top-right"});
+        toast.success(`Quantity updated with success for ${selectedProduct.name}`, {position: "top-right"});
 
         setTimeout(() => {
           this.$router.push("/shopping-list");
