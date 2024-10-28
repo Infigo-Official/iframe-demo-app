@@ -12,7 +12,7 @@
                   <div class="control is-expanded">
                     <label class="label">Product</label>
                     <div class="select">
-                      <select v-model="iframeProductId" required @input="onProductChanged">
+                      <select v-model="iframeProductId" required @input="onProductChanged($event.target.value)">
                         <option disabled value="">Select a product</option>
                         <option v-for="product in products" :key="product.id" :value="product.id">
                           {{ product.name }}
