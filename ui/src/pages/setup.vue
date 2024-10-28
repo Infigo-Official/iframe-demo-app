@@ -2,6 +2,14 @@
   <div class="container">
     <Title></Title>
 
+    <!-- Important Information Section -->
+    <div class="notification">
+      To ensure smooth functionality with the demo app, we recommend using
+      <strong>Chrome</strong>, as Safari’s stricter third-party cookie policies can affect
+      integration unless a matching subdomain is set up. Configuring a subdomain binding with an SSL
+      certificate on your Infigo storefront is necessary for compatibility across browsers.
+    </div>
+
     <h1 class="title is-3">Setup</h1>
     <form @submit.prevent="saveSetup">
       <!-- Platform URL -->
