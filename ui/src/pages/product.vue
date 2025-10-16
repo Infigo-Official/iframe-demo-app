@@ -172,7 +172,7 @@ export default defineComponent({
       try {
         const productsResponse = await ProductService.getAll();
 
-        const supportedProductTypes = [InfigoProductType.Dynamic, InfigoProductType.Static, InfigoProductType.Normal];
+        const supportedProductTypes = [InfigoProductType.Dynamic, InfigoProductType.Static, InfigoProductType.Normal, InfigoProductType.MultiPart];
 
         this.products = productsResponse.data
             .filter(it => supportedProductTypes.includes(it.Type as number))
@@ -217,10 +217,11 @@ export default defineComponent({
         return;
       }
 
-      const allowedToDesign = [InfigoProductType.Dynamic];
+      const allowedToDesign = [InfigoProductType.Dynamic, InfigoProductType.MultiPart];
       return allowedToDesign.includes(selectedProduct.type);
     },
     addToBasket(){
+      debugger;
       const selectedProduct = this.products.find(q => q.id == this.iframeProductId);
       if (!selectedProduct) {
         toast("Product not found", {position: "top-right", type: "error"});

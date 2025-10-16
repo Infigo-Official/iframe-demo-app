@@ -404,7 +404,12 @@ export default defineComponent({
         const baseUrl = SessionState.platformUrl;
         const origin = new URL(baseUrl || "").origin;
 
-        thumbUrl = `${origin}/${thumbUrl}`;
+        // Ensure we don't end up with a double slash
+        const normalizedThumbUrl = thumbUrl.startsWith('/')
+            ? thumbUrl.substring(1)
+            : thumbUrl;
+
+        thumbUrl = `${origin}/${normalizedThumbUrl}`;
       }
 
       // add a timestamp to force browser to retrieve always the latest artwork from Infigo
