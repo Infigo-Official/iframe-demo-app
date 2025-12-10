@@ -14,7 +14,7 @@
           ></iframe>
         </div>
         <div class="column is-paddingless">
-          <Events :events="events"></Events>
+          <Events :events="events" @clear="clearEvents"></Events>
         </div>
       </div>
     </div>
@@ -59,6 +59,9 @@ const Communicator = {
         case CatfishEditorCommunication.MessageConstants.EditorLoaded:
           CatfishEditorCommunication.PostMessage('ExternalDataUpdate', JSON.stringify(attributes), domain, iframeEl?.contentWindow || null);
           break;
+        case CatfishEditorCommunication.MessageConstants.InfigoJobChanged:
+          eventCallback(CatfishEditorCommunication.MessageConstants.InfigoJobChanged, dData);
+          break;
         default:
           break;
       }
@@ -80,9 +83,13 @@ export default defineComponent({
     attributes: {
       type: Object as PropType<Record<string, string>>,
       default: () => ({}),
+    },
+    hideElements: {
+      type: Array as PropType<string[]>,
+      default: () => []
     }
   },
-  emits: ['iframe-loaded', 'item-added-to-basket'],
+  emits: ['iframe-loaded', 'item-added-to-basket', 'job-changed'],
   data() {
     return {
       iframeCustomerGuid: SessionState.customerId,
@@ -125,7 +132,7 @@ export default defineComponent({
 
       try {
         const baseUrl = SessionState.platformUrl as string;
-        const editorLinkFor = await JobService.getLinkForEditor(this.iframeCustomerGuid, this.productId, this.jobId || null);
+        const editorLinkFor = await JobService.getLinkForEditor(this.iframeCustomerGuid, this.productId, this.jobId || null, this.hideElements);
         CustomerService.getSSOUrl(this.iframeCustomerGuid, editorLinkFor)
             .then(it => {
               this.iframeEditorSrc = this.prepareIframeUrl(baseUrl, it.data.LoginUrl || '');
@@ -176,6 +183,26 @@ export default defineComponent({
     },
     eventCallback(method: string, data: any) {
       this.events.push({method, data});
+
+      if (method === CatfishEditorCommunication.MessageConstants.InfigoJobChanged) {
+        this.$emit('job-changed', data);
+      }
+    },
+    clearEvents() {
+      this.events = [];
+    },
+    triggerExternalAddToBasket() {
+      const baseUrl = SessionState.platformUrl as string;
+      const urlObj = new URL(baseUrl);
+      const domain = urlObj.protocol + "//" + urlObj.host;
+      const iframeEl = document.getElementById("infigo-product-editor") as any;
+
+      CatfishEditorCommunication.PostMessage(
+        CatfishEditorCommunication.MessageConstants.EditorNextStep,
+        '{"type": "multipart", "addToBasketExt": true}',
+        domain,
+        iframeEl?.contentWindow || null
+      );
     },
   },
 });

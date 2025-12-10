@@ -6,6 +6,7 @@ const CatfishEditorCommunication: CatfishEditorCommunication = (() => {
         MessageConstants: {
             InfigoItemAddedToBasket: "Infigo.ItemAddedToBasket",
             InfigoItemAddedToSavedProjects: "Infigo.ItemSavedProject",
+            InfigoJobChanged: "Infigo.JobChanged",
             EditorLoaded: "EditorLoaded",
             VariableChanged: 'Variable.Change',
             ExternalDataUpdate: "ExternalDataUpdate",

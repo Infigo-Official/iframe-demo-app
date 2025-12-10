@@ -43,6 +43,24 @@
           </div>
 
           <div v-if="!canGoToBasket">
+            <!-- Add checkboxes section -->
+            <div class="field mb-4" v-if="isMultipartOrMegaEditProduct">
+              <label class="label">Hide UI Elements</label>
+              <p class="help mb-2">
+                These settings are used in case the external app wants to control certain actions from Infigo
+              </p>
+              <div class="control">
+                <label class="checkbox mr-4" v-if="isMegaEditProduct">
+                  <input type="checkbox" v-model="hideBackButton" />
+                  Hide back button
+                </label>
+                <label class="checkbox">
+                  <input type="checkbox" v-model="hideAddToBasketButton" />
+                  Hide add to basket button
+                </label>
+              </div>
+            </div>
+
             <div class="attribute" v-for="attr in getAttributes()" :key="attr.name">
               <div class="control">
                 <label class="label">{{ attr.name }}</label>
@@ -95,10 +113,69 @@
 
         </form>
         <div class="iframe" v-if="openIframe">
+          <!-- Info box explaining external button functionality -->
+          <div class="notification is-info is-light mb-4" v-if="showExternalButtons && !itemAddedToBasket">
+            <p class="is-size-7 mb-2">
+              <strong>External App Control Mode:</strong> The selected buttons are hidden inside the Infigo editor, allowing your external application to control these actions.
+            </p>
+            <div class="is-size-7" v-if="hideAddToBasketButton">
+              <p class="mb-1"><strong>Add to Basket Flow:</strong></p>
+              <ol class="ml-4 mb-2" style="list-style-type: decimal;">
+                <li>Wait for <code>Infigo.JobChanged</code> event with <code>isCompleted: true</code></li>
+                <li>Your external app calls <code>CatfishEditorCommunication.PostMessage()</code> with:
+                  <ul class="ml-4 mt-1" style="list-style-type: disc;">
+                    <li><strong>messageId:</strong> <code>'EditorNextStep'</code></li>
+                    <li><strong>data:</strong> <code>'{"type": "multipart", "addToBasketExt": true}'</code></li>
+                    <li><strong>target_url:</strong> <code>'{protocol}://{host}'</code> (iframe domain)</li>
+                    <li><strong>target:</strong> <code>iframeElement.contentWindow</code></li>
+                  </ul>
+                </li>
+                <li>Infigo responds with <code>Infigo.ItemAddedToBasket</code> event containing job details</li>
+              </ol>
+              <p class="mb-0"><strong>Example:</strong></p>
+              <pre class="has-background-dark has-text-light p-2 is-size-7" style="border-radius: 4px; overflow-x: auto;">CatfishEditorCommunication.PostMessage(
+  'EditorNextStep',
+  '{"type": "multipart", "addToBasketExt": true}',
+  'https://your-infigo-domain.com',
+  document.getElementById('infigo-iframe').contentWindow
+);</pre>
+            </div>
+            <p class="is-size-7 mt-2" v-if="hideBackButton">
+              <strong>Back Button:</strong> Your external app can control navigation back to product selection.
+            </p>
+          </div>
+
+          <!-- External buttons shown when elements are hidden and job is completed - PLACED ON TOP -->
+          <div class="field mb-4" v-if="showExternalButtons">
+            <div class="control buttons">
+              <button
+                type="button"
+                class="button is-dark-infigo"
+                @click="handleExternalBack"
+                v-if="hideBackButton && !itemAddedToBasket"
+                :disabled="!isJobCompleted"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                class="button is-dark-infigo"
+                @click="handleExternalAddToBasket"
+                v-if="hideAddToBasketButton && !itemAddedToBasket"
+                :disabled="!isJobCompleted"
+              >
+                Add to Basket
+              </button>
+            </div>
+          </div>
+
           <InfigoIframe :product-id="iframeProductId"
                         @iframe-loaded="iframeLoaded"
                         :attributes="attributeSelection"
-                        @item-added-to-basket="addDesignJob"/>
+                        :hide-elements="getHideElements()"
+                        @item-added-to-basket="addDesignJob"
+                        @job-changed="onJobChanged"
+                        ref="infigoIframe"/>
         </div>
       </div>
     </div>
@@ -137,8 +214,33 @@ export default defineComponent({
       products: [] as Array<ProductType>,
       openIframe: false,
       attributeTypes: InfigoAttributeType,
-      attributeSelection: {} as Record<string, string>
+      attributeSelection: {} as Record<string, string>,
+      hideBackButton: false,
+      hideAddToBasketButton: false,
+      isJobCompleted: false,
+      currentJobId: null as number | null,
+      itemAddedToBasket: false
     };
+  },
+  computed: {
+    showExternalButtons(): boolean {
+      return this.openIframe && (this.hideBackButton || this.hideAddToBasketButton);
+    },
+    isMultipartOrMegaEditProduct(): boolean {
+      if (!this.iframeProductId) {
+        return false;
+      }
+      const selectedProduct = this.products.find(q => q.id == this.iframeProductId);
+      return selectedProduct?.type === InfigoProductType.MultiPart ||
+             selectedProduct?.type === InfigoProductType.Dynamic;
+    },
+    isMegaEditProduct(): boolean {
+      if (!this.iframeProductId) {
+        return false;
+      }
+      const selectedProduct = this.products.find(q => q.id == this.iframeProductId);
+      return selectedProduct?.type === InfigoProductType.Dynamic;
+    }
   },
   async created() { // Make created method async
     await this.init();
@@ -287,6 +389,37 @@ export default defineComponent({
 
       ShoppingCartItemState.addItem(newItemBasket);
       this.canGoToBasket = true;
+      this.itemAddedToBasket = true;
+    },
+    getHideElements(): string[] {
+      const elements: string[] = [];
+      if (this.hideBackButton) {
+        elements.push('backButton');
+      }
+      if (this.hideAddToBasketButton) {
+        elements.push('addToBasket');
+      }
+      return elements;
+    },
+    onJobChanged(data: any) {
+      console.log('Job changed:', data);
+      this.isJobCompleted = data.isCompleted || false;
+      this.currentJobId = data.jobId || null;
+    },
+    handleExternalBack() {
+      this.openIframe = false;
+      this.canGoToBasket = false;
+      this.hideBackButton = false;
+      this.hideAddToBasketButton = false;
+      this.isJobCompleted = false;
+      this.iframeProductId = null;
+      this.itemAddedToBasket = false;
+    },
+    handleExternalAddToBasket() {
+      const iframe = this.$refs.infigoIframe as any;
+      if (iframe && iframe.triggerExternalAddToBasket) {
+        iframe.triggerExternalAddToBasket();
+      }
     }
   }
 });
