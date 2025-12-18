@@ -50,10 +50,6 @@
                 These settings are used in case the external app wants to control certain actions from Infigo
               </p>
               <div class="control">
-                <label class="checkbox mr-4" v-if="isMegaEditProduct">
-                  <input type="checkbox" v-model="hideBackButton" />
-                  Hide back button
-                </label>
                 <label class="checkbox">
                   <input type="checkbox" v-model="hideAddToBasketButton" />
                   Hide add to basket button
@@ -61,52 +57,61 @@
               </div>
             </div>
 
-            <div class="attribute" v-for="attr in getAttributes()" :key="attr.name">
-              <div class="control">
-                <label class="label">{{ attr.name }}</label>
+            <div v-if="getAttributes().length > 0">
+              <div class="field mb-4">
+                <label class="label">Product Attributes</label>
+                <p class="help">
+                  These product attributes are loaded from Infigo. The values set will be reflected in Infigo.
+                </p>
+              </div>
 
-                <template v-if="attr.type == attributeTypes.TextBox">
-                  <input class="input" type="text" :placeholder="attr.description"
-                         @input="onAttributeChanged(attr.name, $event.target.value)"/>
-                </template>
-                <template v-else-if="attr.type == attributeTypes.Checkboxes">
-                  <div class="checkboxes">
-                    <label class="checkbox" v-for="value in attr.values" :key="value.id">
-                      <input type="checkbox" :value="value.name"
-                             @change="onAttributeChanged(attr.name, $event.target.value)"/>
-                      {{ value.name }}
-                    </label>
-                  </div>
-                </template>
-                <template v-else-if="attr.type == attributeTypes.DropdownList">
-                  <div class="select">
-                    <select @change="onAttributeChanged(attr.name, $event.target.value)">
-                      <option disabled value="">Select a value</option>
-                      <option v-for="value in attr.values" :key="value.id" :value="value.name">
+              <div class="attribute" v-for="attr in getAttributes()" :key="attr.name">
+                <div class="control">
+                  <label class="label">{{ attr.name }}</label>
+
+                  <template v-if="attr.type == attributeTypes.TextBox">
+                    <input class="input" type="text" :placeholder="attr.description"
+                           @input="onAttributeChanged(attr.name, $event.target.value)"/>
+                  </template>
+                  <template v-else-if="attr.type == attributeTypes.Checkboxes">
+                    <div class="checkboxes">
+                      <label class="checkbox" v-for="value in attr.values" :key="value.id">
+                        <input type="checkbox" :value="value.name"
+                               @change="onAttributeChanged(attr.name, $event.target.value)"/>
                         {{ value.name }}
-                      </option>
-                    </select>
-                  </div>
-                </template>
+                      </label>
+                    </div>
+                  </template>
+                  <template v-else-if="attr.type == attributeTypes.DropdownList">
+                    <div class="select">
+                      <select @change="onAttributeChanged(attr.name, $event.target.value)">
+                        <option disabled value="">Select a value</option>
+                        <option v-for="value in attr.values" :key="value.id" :value="value.name">
+                          {{ value.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </template>
 
-                <template v-else-if="attr.type == attributeTypes.RadioList">
-                  <div class="radio-list">
-                    <label class="radio" v-for="value in attr.values" :key="value.id">
-                      <input type="radio"
-                             :value="value.name"
-                             :name="attr.name"
-                             @change="onAttributeChanged(attr.name, $event.target.value)"/>
-                      {{ value.name }}
-                    </label>
-                  </div>
-                </template>
+                  <template v-else-if="attr.type == attributeTypes.RadioList">
+                    <div class="radio-list">
+                      <label class="radio" v-for="value in attr.values" :key="value.id">
+                        <input type="radio"
+                               :value="value.name"
+                               :name="attr.name"
+                               @change="onAttributeChanged(attr.name, $event.target.value)"/>
+                        {{ value.name }}
+                      </label>
+                    </div>
+                  </template>
 
-                <template v-else>
-                  <input class="input"
-                         type="text"
-                         :placeholder="attr.description"
-                         @input="onAttributeChanged(attr.name, $event.target.value)"/>
-                </template>
+                  <template v-else>
+                    <input class="input"
+                           type="text"
+                           :placeholder="attr.description"
+                           @input="onAttributeChanged(attr.name, $event.target.value)"/>
+                  </template>
+                </div>
               </div>
             </div>
           </div>
@@ -140,23 +145,11 @@
   document.getElementById('infigo-iframe').contentWindow
 );</pre>
             </div>
-            <p class="is-size-7 mt-2" v-if="hideBackButton">
-              <strong>Back Button:</strong> Your external app can control navigation back to product selection.
-            </p>
           </div>
 
           <!-- External buttons shown when elements are hidden and job is completed - PLACED ON TOP -->
           <div class="field mb-4" v-if="showExternalButtons">
             <div class="control buttons">
-              <button
-                type="button"
-                class="button is-dark-infigo"
-                @click="handleExternalBack"
-                v-if="hideBackButton && !itemAddedToBasket"
-                :disabled="!isJobCompleted"
-              >
-                Back
-              </button>
               <button
                 type="button"
                 class="button is-dark-infigo"
@@ -215,7 +208,6 @@ export default defineComponent({
       openIframe: false,
       attributeTypes: InfigoAttributeType,
       attributeSelection: {} as Record<string, string>,
-      hideBackButton: false,
       hideAddToBasketButton: false,
       isJobCompleted: false,
       currentJobId: null as number | null,
@@ -224,7 +216,7 @@ export default defineComponent({
   },
   computed: {
     showExternalButtons(): boolean {
-      return this.openIframe && (this.hideBackButton || this.hideAddToBasketButton);
+      return this.openIframe && this.hideAddToBasketButton;
     },
     isMultipartOrMegaEditProduct(): boolean {
       if (!this.iframeProductId) {
@@ -233,13 +225,6 @@ export default defineComponent({
       const selectedProduct = this.products.find(q => q.id == this.iframeProductId);
       return selectedProduct?.type === InfigoProductType.MultiPart ||
              selectedProduct?.type === InfigoProductType.Dynamic;
-    },
-    isMegaEditProduct(): boolean {
-      if (!this.iframeProductId) {
-        return false;
-      }
-      const selectedProduct = this.products.find(q => q.id == this.iframeProductId);
-      return selectedProduct?.type === InfigoProductType.Dynamic;
     }
   },
   async created() { // Make created method async
@@ -393,9 +378,6 @@ export default defineComponent({
     },
     getHideElements(): string[] {
       const elements: string[] = [];
-      if (this.hideBackButton) {
-        elements.push('backButton');
-      }
       if (this.hideAddToBasketButton) {
         elements.push('addToBasket');
       }
@@ -405,15 +387,6 @@ export default defineComponent({
       console.log('Job changed:', data);
       this.isJobCompleted = data.isCompleted || false;
       this.currentJobId = data.jobId || null;
-    },
-    handleExternalBack() {
-      this.openIframe = false;
-      this.canGoToBasket = false;
-      this.hideBackButton = false;
-      this.hideAddToBasketButton = false;
-      this.isJobCompleted = false;
-      this.iframeProductId = null;
-      this.itemAddedToBasket = false;
     },
     handleExternalAddToBasket() {
       const iframe = this.$refs.infigoIframe as any;
