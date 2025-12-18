@@ -198,8 +198,8 @@ export default defineComponent({
       const iframeEl = document.getElementById("infigo-product-editor") as any;
 
       CatfishEditorCommunication.PostMessage(
-        CatfishEditorCommunication.MessageConstants.EditorNextStep,
-        '{"type": "multipart", "addToBasketExt": true}',
+        CatfishEditorCommunication.MessageConstants.InfigoAddToBasket,
+        '',
         domain,
         iframeEl?.contentWindow || null
       );

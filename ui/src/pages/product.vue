@@ -124,8 +124,8 @@
                 <li>Wait for <code>Infigo.JobChanged</code> event with <code>isCompleted: true</code></li>
                 <li>Your external app calls <code>CatfishEditorCommunication.PostMessage()</code> with:
                   <ul class="ml-4 mt-1" style="list-style-type: disc;">
-                    <li><strong>messageId:</strong> <code>'EditorNextStep'</code></li>
-                    <li><strong>data:</strong> <code>'{"type": "multipart", "addToBasketExt": true}'</code></li>
+                    <li><strong>messageId:</strong> <code>'Infigo.ItemAddedToBasketFromIframe'</code></li>
+                    <li><strong>data:</strong> No data object to be sent</li>
                     <li><strong>target_url:</strong> <code>'{protocol}://{host}'</code> (iframe domain)</li>
                     <li><strong>target:</strong> <code>iframeElement.contentWindow</code></li>
                   </ul>
@@ -134,8 +134,8 @@
               </ol>
               <p class="mb-0"><strong>Example:</strong></p>
               <pre class="has-background-dark has-text-light p-2 is-size-7" style="border-radius: 4px; overflow-x: auto;">CatfishEditorCommunication.PostMessage(
-  'EditorNextStep',
-  '{"type": "multipart", "addToBasketExt": true}',
+  'Infigo.ItemAddedToBasketFromIframe',
+  '',
   'https://your-infigo-domain.com',
   document.getElementById('infigo-iframe').contentWindow
 );</pre>
