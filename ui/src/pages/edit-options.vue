@@ -147,6 +147,7 @@ export default defineComponent({
         return;
       }
 
+      const updatedItem: BasketItem = {
         ...existingItems[index],
         jobId: item.Job.Id || existingItems[index].jobId,
         quantity: item.Job.Quantity,
