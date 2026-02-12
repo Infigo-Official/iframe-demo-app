@@ -80,6 +80,10 @@ export default defineComponent({
     attributes: {
       type: Object as PropType<Record<string, string>>,
       default: () => ({}),
+    },
+    enableEditOptions: {
+      type: Boolean,
+      default: false,
     }
   },
   emits: ['iframe-loaded', 'item-added-to-basket'],
@@ -125,7 +129,7 @@ export default defineComponent({
 
       try {
         const baseUrl = SessionState.platformUrl as string;
-        const editorLinkFor = await JobService.getLinkForEditor(this.iframeCustomerGuid, this.productId, this.jobId || null);
+        const editorLinkFor = await JobService.getLinkForEditor(this.iframeCustomerGuid, this.productId, this.jobId || null, this.enableEditOptions);
         CustomerService.getSSOUrl(this.iframeCustomerGuid, editorLinkFor)
             .then(it => {
               this.iframeEditorSrc = this.prepareIframeUrl(baseUrl, it.data.LoginUrl || '');

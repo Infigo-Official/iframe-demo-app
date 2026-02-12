@@ -53,6 +53,9 @@
                       <button @click="editItem(index)" class="button is-info is-small" v-if="canEditJob(index)">
                         Edit
                       </button>
+                      <button @click="editOptions(index)" class="button is-info is-small" v-if="canEditOptions(index)">
+                        Edit Options
+                      </button>
                       <button @click="getOutput(index)" class="button is-info is-small" v-if="canCreateOutput(index)">
                         Create Output
                       </button>
@@ -223,11 +226,19 @@ export default defineComponent({
     },
     canEditJob(index: number): boolean {
       const item = this.cartItems[index];
-      return item.productType == InfigoProductType.Dynamic;
+      return item.productType == InfigoProductType.Dynamic || item.productType == InfigoProductType.MultiPart;
     },
     canCreateOutput(index: number): boolean {
       const item = this.cartItems[index];
       return item.productType == InfigoProductType.Dynamic;
+    },
+    canEditOptions(index: number): boolean {
+      const item = this.cartItems[index];
+      return !!item.jobId && (item.productType == InfigoProductType.Dynamic || item.productType == InfigoProductType.MultiPart);
+    },
+    editOptions(index: number) {
+      const item = this.cartItems[index];
+      this.$router.push(`/edit-options/${item.productId}/${item.jobId}`);
     },
     editItem(index: number) {
       const item = this.cartItems[index];
