@@ -1,6 +1,8 @@
 export interface MessageConstants {
     InfigoItemAddedToBasket: string;
     InfigoItemAddedToSavedProjects: string;
+    InfigoJobChanged: string;
+    InfigoAddToBasket: string;
     EditorLoaded: string;
     VariableChanged: string;
     ExternalDataUpdate: string;
