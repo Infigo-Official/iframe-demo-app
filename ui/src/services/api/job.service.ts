@@ -85,7 +85,7 @@ const JobService = {
      *     console.error("Error getting editor link:", error);
      *   });
      */
-    async getLinkForEditor(customerId: string, productId: number, jobId: string | null, hideElements?: string[]): Promise<string> {
+    async getLinkForEditor(customerId: string, productId: number, jobId: string | null, hideElements?: string[], enableEditOptions?: boolean): Promise<string> {
         let linkForUrl = `/services/api/Editor/LinkFor/${customerId}`;
         linkForUrl = addToQueryString(linkForUrl, 'productId', productId);
         linkForUrl = addToQueryString(linkForUrl, 'quantity', 1);
@@ -99,6 +99,10 @@ const JobService = {
             hideElements.forEach(element => {
                 linkForUrl = addToQueryString(linkForUrl, 'hideElements', element);
             });
+        }
+
+        if (enableEditOptions) {
+            linkForUrl = addToQueryString(linkForUrl, "enableEditOptions", true);
         }
 
         return new Promise((resolve, reject) => {

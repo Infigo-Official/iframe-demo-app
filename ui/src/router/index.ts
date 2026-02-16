@@ -32,6 +32,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("../pages/edit-job.vue"),
     },
     {
+        path: "/edit-options/:productId/:jobId",
+        name: "edit-options",
+        component: () => import("../pages/edit-options.vue"),
+    },
+    {
         path: '/documentation',
         name: 'documentation',
         component: () => import("../pages/setup.vue"),

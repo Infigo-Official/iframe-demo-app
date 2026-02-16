@@ -22,6 +22,16 @@
                   </div>
                 </div>
               </div>
+              <div class="level-item" v-if="!canGoToBasket">
+                <div class="field">
+                  <div class="control">
+                    <label class="checkbox">
+                      <input type="checkbox" v-model="enableEditOptions" />
+                      Enable Edit Options
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="level-right">
               <div class="level-item">
@@ -29,6 +39,9 @@
                   <div class="control buttons">
                     <button type="submit" class="button is-dark-infigo" :disabled="!iframeProductId" v-if="!canGoToBasket && canDesign()">
                       Open Editor
+                    </button>
+                    <button type="button" class="button is-dark-infigo" :disabled="!iframeProductId" @click="openLandingPage" v-if="!canGoToBasket && canDesign()">
+                      Open Landing Page
                     </button>
                     <button type="button" class="button is-dark-infigo" @click="addToBasket" v-if="!canGoToBasket && !canDesign()">
                       Add to basket
@@ -165,10 +178,23 @@
           <InfigoIframe :product-id="iframeProductId"
                         @iframe-loaded="iframeLoaded"
                         :attributes="attributeSelection"
-                        :hide-elements="getHideElements()"
+                        :enable-edit-options="enableEditOptions"
                         @item-added-to-basket="addDesignJob"
+                        :hide-elements="getHideElements()"
                         @job-changed="onJobChanged"
-                        ref="infigoIframe"/>
+                        ref="infigoIframe"
+          />
+        </div>
+        <div class="iframe" v-if="landingPageSrc">
+          <iframe
+            id="landing-page-iframe"
+            width="100%"
+            height="800px"
+            scrolling="no"
+            frameborder="0"
+            class="infigo-main-editor is-clipped"
+            :src="landingPageSrc"
+          ></iframe>
         </div>
       </div>
     </div>
@@ -192,6 +218,8 @@ import {InfigoProductType} from "@/types/infigo-product.type";
 import {BasketItem} from "@/types/demo/basket-item";
 import {ShoppingCartItem} from "@/types/iframe/infigo-job-response.type";
 import SessionState from "@/services/cache/session-state";
+import CustomerService from "@/services/api/customer.service";
+import CatfishEditorCommunication from "@/services/catfish-editor-communication";
 
 export default defineComponent({
   components: {
@@ -206,8 +234,11 @@ export default defineComponent({
       iframeProductId: null as number | null,
       products: [] as Array<ProductType>,
       openIframe: false,
+      enableEditOptions: true,
       attributeTypes: InfigoAttributeType,
       attributeSelection: {} as Record<string, string>,
+      landingPageSrc: "",
+      landingDestroyCallback: null as any,
       hideAddToBasketButton: false,
       isJobCompleted: false,
       currentJobId: null as number | null,
@@ -229,6 +260,11 @@ export default defineComponent({
   },
   async created() { // Make created method async
     await this.init();
+  },
+  unmounted() {
+    if (this.landingDestroyCallback) {
+      this.landingDestroyCallback();
+    }
   },
   methods: {
     getAttributes() {
@@ -348,10 +384,61 @@ export default defineComponent({
         this.$router.push("/shopping-list");
       }, 1000);
     },
+    async openLandingPage() {
+      const platformUrl = SessionState.platformUrl;
+      const customerId = SessionState.customerId;
+
+      if (!platformUrl || !customerId || !this.iframeProductId) {
+        toast.error("Platform URL, Customer ID and Product are required");
+        return;
+      }
+
+      this.loading = true;
+
+      try {
+        const urlObj = new URL(platformUrl);
+        const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+        const storefrontPath = urlObj.pathname.replace(/\/+$/, '');
+        const parentOrigin = window.location.origin;
+
+        const productPageUrl = `${storefrontPath}/p/${this.iframeProductId}?editOptions=true&enableEditOptions=${this.enableEditOptions}&bMode=Iframe&bUrl=${encodeURIComponent(parentOrigin)}`;
+
+        const ssoResponse = await CustomerService.getSSOUrl(customerId, productPageUrl);
+        const loginUrl = ssoResponse.data.LoginUrl || "";
+
+        this.landingPageSrc = `${baseUrl}${loginUrl}`;
+        this.openIframe = false;
+        this.canGoToBasket = true;
+
+        if (this.landingDestroyCallback) {
+          this.landingDestroyCallback();
+        }
+
+        this.landingDestroyCallback = CatfishEditorCommunication.RegisterForCatfishEditorEvent(
+          (method: string, data: any) => {
+            switch (method) {
+              case CatfishEditorCommunication.MessageConstants.InfigoItemAddedToBasket:
+              case CatfishEditorCommunication.MessageConstants.InfigoItemAddedToSavedProjects:
+                this.addDesignJob(data as ShoppingCartItem);
+                break;
+              default:
+                break;
+            }
+          },
+          baseUrl
+        );
+      } catch (e) {
+        console.error("Failed to open landing page", e);
+        toast.error("Failed to open landing page");
+      } finally {
+        this.loading = false;
+      }
+    },
     openIframeSubmit() {
       if (this.openIframe) {
         this.init();
       }
+      this.landingPageSrc = "";
       this.openIframe = true;
       this.loading = true;
       this.canGoToBasket = true;
